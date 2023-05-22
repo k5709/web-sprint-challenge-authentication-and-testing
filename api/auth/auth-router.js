@@ -14,7 +14,7 @@ const user = {
 };
 const JWT = JWT_SECRET;
 
-router.post("/register", restricted, (req, res) => {
+router.post("/register", (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -23,7 +23,7 @@ router.post("/register", restricted, (req, res) => {
 
   const existingUser = users.find((user) => user.username === username);
   if (existingUser) {
-    return res.status(400).send("username taken");
+    return res.status(400).json("username taken");
   }
 
   const hashedPassword = bcrypt.hashSync(password, 8);
@@ -36,7 +36,7 @@ router.post("/register", restricted, (req, res) => {
 
   users.push(newUser);
 
-  res.status(200).json(newUser);
+  return res.status(200).json(newUser);
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -74,7 +74,7 @@ router.post("/login", (req, res) => {
   const user = user.find((user) => user.username === username);
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json("invalid credentials");
+    return res.status(400).json("invalid credentials");
   }
   //created token after checking the username
   const token = jwt.sign({ userId: user.id }, JWT);
