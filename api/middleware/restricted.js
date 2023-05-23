@@ -21,8 +21,8 @@ module.exports = (req, res, next) => {
     //token is valid, gained access to decoded data if needed
 
     req.userId = decoded.userID;
-    next();
   } catch (err) {
-    return res.status(401).send("token invalid");
+    return res.status(401).json("token invalid");
   }
+  next();
 };

@@ -2,41 +2,57 @@ const express = require("express");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const restricted = require("../middleware/restricted");
+const { checkUsernameExists } = require("./auth-middleware");
+const User = require("./auth.model");
+const JWT_SECRET = require("../../secrets/index");
 const jwt = require("jsonwebtoken");
+
 router.use(express.json());
-const { JWT_SECRET } = require("../../secrets/index");
 
-const users = [];
-const user = {
-  id: 1,
-  username: "Captain Marvel",
-  password: "2a$08$jG.wIGR2S4hxuyWNcBf9MuoC4y0dNy7qC/LbmtuFBSdIhWks2LhpG",
-};
-const JWT = JWT_SECRET;
-
-router.post("/register", (req, res) => {
+router.post("/register", checkUsernameExists, async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json("username and password required");
-  }
-
-  const existingUser = users.find((user) => user.username === username);
-  if (existingUser) {
-    return res.status(400).json("username taken");
-  }
+  // if (!username || !password) {
+  //   return res.status(400).json("username and password required");
+  // }
 
   const hashedPassword = bcrypt.hashSync(password, 8);
 
-  const newUser = {
-    id: users.length + 1,
-    username,
-    password: hashedPassword,
-  };
+  const user = { username: username, password: hashedPassword };
 
-  users.push(newUser);
+  const newUser = await User.add(user);
+  res.status(201).json({
+    id: newUser.id,
+    username: newUser.username,
+    password: newUser.password,
+  });
 
-  return res.status(200).json(newUser);
+  // const { username, password } = req.body;
+
+  // if (!username || !password) {
+  //   return res.status(400).json("username and password required");
+  // }
+
+  // const hashedPassword = bcrypt.hashSync(password, 8);
+
+  // const newUser = {
+  //   username,
+  //   password: hashedPassword,
+  // };
+
+  // const existingUser = db.get("users").find({ username }).value();
+  // if (existingUser) {
+  //   return res.status(400).json("username taken");
+  // }
+
+  // const createdUser = db.get("users").insert(newUser).write();
+
+  // return res.status(200).json({
+  //   id: createdUser.id,
+  //   username: createdUser.username,
+  //   password: createdUser.password,
+  // });
+
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -64,25 +80,21 @@ router.post("/register", (req, res) => {
   */
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", checkUsernameExists, async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json("username and password required");
-  }
+  const newUser = await User.findBy({ username });
+  const user = newUser[0];
 
-  const user = users.find((user) => user.username === username);
-  const hashedPassword = bcrypt.hashSync(password, 8);
-  if (!user || !bcrypt.compareSync(password, user.hashedPassword)) {
-    return res.status(400).json("invalid credentials");
+  if (user && bcrypt.compareSync(password, user.password)) {
+    const token = buildToken(user);
+    res.status(200).json({
+      message: `welcome back, ${user.username}`,
+      token: token,
+    });
+  } else {
+    return res.status(401).json("invalid credentials");
   }
-  //created token after checking the username
-  const token = jwt.sign({ userId: user.id }, JWT);
-
-  res.status(200).json({
-    message: `welcome, ${user.username}`,
-    token: token,
-  });
 
   /*
     IMPLEMENT
@@ -108,5 +120,17 @@ router.post("/login", (req, res) => {
       the response body should include a string exactly as follows: "invalid credentials".
   */
 });
+
+function buildToken(user) {
+  const payload = {
+    id: user.id,
+    username: user.username,
+  };
+
+  const options = {
+    expiresIn: "1d",
+  };
+  return jwt.sign(payload, JWT_SECRET, options);
+}
 
 module.exports = router;
