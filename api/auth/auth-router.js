@@ -19,13 +19,22 @@ router.post("/register", checkUsernameExists, async (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 8);
 
   const user = { username: username, password: hashedPassword };
-
-  const newUser = await User.add(user);
-  res.status(201).json({
-    id: newUser.id,
-    username: newUser.username,
-    password: newUser.password,
-  });
+  try {
+    const newUser = await User.add(user);
+    res.status(201).json({
+      id: newUser.id,
+      username: newUser.username,
+      password: newUser.password,
+    });
+  } catch (error) {
+    if (
+      error.code === "SQLITE_CONSTRAINT" &&
+      error.message.includes("UNIQUE")
+    ) {
+      return res.status(400).json("username taken");
+    }
+    res.status(500).json("Internal Server Error");
+  }
 
   // const { username, password } = req.body;
 
@@ -83,12 +92,16 @@ router.post("/register", checkUsernameExists, async (req, res) => {
 router.post("/login", checkUsernameExists, async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password) {
+    return res.status(400).json("username and password required");
+  }
+
   const newUser = await User.findBy({ username });
   const user = newUser[0];
 
   if (user && bcrypt.compareSync(password, user.password)) {
     const token = buildToken(user);
-    res.status(200).json({
+    return res.status(200).json({
       message: `welcome back, ${user.username}`,
       token: token,
     });
@@ -130,6 +143,7 @@ function buildToken(user) {
   const options = {
     expiresIn: "1d",
   };
+
   return jwt.sign(payload, JWT_SECRET, options);
 }
 
