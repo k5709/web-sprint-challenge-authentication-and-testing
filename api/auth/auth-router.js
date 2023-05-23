@@ -71,9 +71,9 @@ router.post("/login", (req, res) => {
     return res.status(400).json("username and password required");
   }
 
-  const user = user.find((user) => user.username === username);
-
-  if (!user || !bcrypt.compareSync(password, user.password)) {
+  const user = users.find((user) => user.username === username);
+  const hashedPassword = bcrypt.hashSync(password, 8);
+  if (!user || !bcrypt.compareSync(password, user.hashedPassword)) {
     return res.status(400).json("invalid credentials");
   }
   //created token after checking the username

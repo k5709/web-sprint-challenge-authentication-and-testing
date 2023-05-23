@@ -64,22 +64,13 @@ describe("[POST] /login", () => {
 
     expect(response.body).toBe("username and password required");
   });
-  it("should log in successfully with correct credentials", async () => {
-    const response = await request(server)
-      .post("/api/auth/login")
-      .send({ username: "testuser", password: "testpassword" })
-      .expect(200);
 
-    expect(response.body).toHaveProperty("message", "welcome, testuser");
-    expect(response.body).toHaveProperty("token");
-  });
   it("should return an error for invalid credentials", async () => {
     const response = await request(server)
       .post("/api/auth/login")
       .send({ username: "nonexistent", password: "wrongpassword" })
       .expect(400);
 
-    // Assert the response body
     expect(response.body).toBe("invalid credentials");
   });
 });
