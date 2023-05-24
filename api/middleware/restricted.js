@@ -2,29 +2,25 @@ const jwt = require("jsonwebtoken");
 const jwtSecret = require("../secrets/index");
 
 module.exports = (req, res, next) => {
-  /*
-    IMPLEMENT
-
-    1- On valid token in the Authorization header, call next.
-
-    2- On missing token in the Authorization header,
-      the response body should include a string exactly as follows: "token required".
-
-    3- On invalid or expired token in the Authorization header,
-      the response body should include a string exactly as follows: "token invalid".
-  */
   const token = req.headers.authorization;
+
   if (!token) {
     return res.status(400).json("token required");
   }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret.JWT_SECRET);
-    //token is valid, gained access to decoded data if needed
+    const decoded = jwt.verify(token, jwtSecret);
 
-    req.user = decoded.user;
+    // Token is valid, you can access the decoded data if needed
+    req.userId = decoded.userId;
     next();
   } catch (err) {
-    return res.status(401).json("token invalid");
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json("token expired");
+    } else if (err instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json("token invalid");
+    }
+
+    return res.status(500).json("Internal Server Error");
   }
 };

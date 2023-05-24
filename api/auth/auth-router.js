@@ -13,12 +13,12 @@ router.post(
   "/register",
   checkUsernameExists,
   validateBody,
-  async (req, res) => {
+  async (req, res, next) => {
     const { username, password } = req.body;
+    const hashedPassword = bcrypt.hashSync(password, 8);
+    const user = { username: username, password: hashedPassword };
 
     try {
-      const hashedPassword = bcrypt.hashSync(password, 8);
-      const user = { username: username, password: hashedPassword };
       const newUser = await User.add(user);
 
       res.status(201).json({
@@ -27,14 +27,7 @@ router.post(
         password: newUser.password,
       });
     } catch (error) {
-      if (
-        error.code === "SQLITE_CONSTRAINT" &&
-        error.message.includes("UNIQUE")
-      ) {
-        return res.status(400).json("username taken");
-      } else {
-        res.status(500).json("Internal Server Error");
-      }
+      next(error);
     }
 
     // const { username, password } = req.body;
@@ -91,17 +84,15 @@ router.post(
   }
 );
 
-router.post("/login", validateBody, async (req, res) => {
+router.post("/login", validateBody, async (req, res, next) => {
   const { username, password } = req.body;
+
   const newUser = await User.findBy({ username });
   const user = newUser[0];
 
   if (user && bcrypt.compareSync(password, user.password)) {
     const token = buildToken(user);
-    return await res.status(200).json({
-      message: `welcome back, ${user.username}`,
-      token: token,
-    });
+    next({ message: `welcome back, ${user.username}`, token: token });
   } else {
     return res.status(401).json("invalid credentials");
   }

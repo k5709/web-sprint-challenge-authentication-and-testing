@@ -4,14 +4,15 @@ const User = require("./auth.model");
 const checkUsernameExists = async (req, res, next) => {
   try {
     const { username } = req.body;
-    if (!username) {
-      return res.status(400).json("username and password required");
-    }
     const newUser = await User.findBy({ username });
     if (newUser[0]) {
-      res.status(422).json("username taken");
+      next({
+        status: 422,
+        message: "The username is already taken",
+      });
+    } else {
+      next();
     }
-    next();
   } catch (err) {
     next(err);
   }
@@ -28,8 +29,9 @@ const validateBody = async (req, res, next) => {
       !username.trim()
     ) {
       return res.status(400).json("username and password required");
+    } else {
+      next();
     }
-    next();
   } catch (err) {
     next(err);
   }
