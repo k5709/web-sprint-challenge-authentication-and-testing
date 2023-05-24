@@ -53,7 +53,7 @@ describe("[GET] jokes", () => {
     const response = await request(server)
       .get("/api/jokes")
       .send({ token: "invalid token" })
-      .expect(400);
+      .expect(401);
 
     expect(response.body).toBe("token required");
   });
