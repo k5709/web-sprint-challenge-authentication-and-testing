@@ -44,7 +44,7 @@ describe("[POST] /register", () => {
       .send({ username: "", password: "testpassword" })
       .expect(400);
 
-    expect(response.body).toBe("username and password required");
+    expect(response.body).toEqual("username and password required");
   });
 });
 

@@ -15,16 +15,18 @@ router.post(
   validateBody,
   async (req, res, next) => {
     const { username, password } = req.body;
-    const hashedPassword = bcrypt.hashSync(password, 8);
-    const user = { username: username, password: hashedPassword };
+    // const hashedPassword = bcrypt.hashSync(password, 8);
+    // const user = { username: username, password: hashedPassword };
 
     try {
+      const hashedPassword = bcrypt.hashSync(password, 8);
+      const user = { 'username': username, 'password': hashedPassword };
       const newUser = await User.add(user);
 
       res.status(201).json({
-        id: newUser.id,
-        username: newUser.username,
-        password: newUser.password,
+        'id': newUser.id,
+        'username': newUser.username,
+        'password': newUser.password,
       });
     } catch (error) {
       next(error);
