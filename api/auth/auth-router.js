@@ -2,67 +2,68 @@ const express = require("express");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const restricted = require("../middleware/restricted");
-const { checkUsernameExists } = require("./auth-middleware");
+const { checkUsernameExists, validateBody } = require("./auth-middleware");
 const User = require("./auth.model");
-const JWT_SECRET = require("../../secrets/index");
+const JWT_SECRET = require("../secrets/index");
 const jwt = require("jsonwebtoken");
 
 router.use(express.json());
 
-router.post("/register", checkUsernameExists, async (req, res) => {
-  const { username, password } = req.body;
+router.post(
+  "/register",
+  checkUsernameExists,
+  validateBody,
+  async (req, res) => {
+    const { username, password } = req.body;
+    console.log(username, password);
 
-  // if (!username || !password) {
-  //   return res.status(400).json("username and password required");
-  // }
+    const hashedPassword = bcrypt.hashSync(password, 8);
 
-  const hashedPassword = bcrypt.hashSync(password, 8);
-
-  const user = { username: username, password: hashedPassword };
-  try {
-    const newUser = await User.add(user);
-    res.status(201).json({
-      id: newUser.id,
-      username: newUser.username,
-      password: newUser.password,
-    });
-  } catch (error) {
-    if (
-      error.code === "SQLITE_CONSTRAINT" &&
-      error.message.includes("UNIQUE")
-    ) {
-      return res.status(400).json("username taken");
+    const user = { username: username, password: hashedPassword };
+    try {
+      const newUser = await User.add(user);
+      res.status(201).json({
+        id: newUser.id,
+        username: newUser.username,
+        password: newUser.password,
+      });
+    } catch (error) {
+      if (
+        error.code === "SQLITE_CONSTRAINT" &&
+        error.message.includes("UNIQUE")
+      ) {
+        return res.status(400).json("username taken");
+      }
+      res.status(500).json("Internal Server Error");
     }
-    res.status(500).json("Internal Server Error");
-  }
 
-  // const { username, password } = req.body;
+    // const { username, password } = req.body;
 
-  // if (!username || !password) {
-  //   return res.status(400).json("username and password required");
-  // }
+    // if (!username || !password) {
+    //   return res.status(400).json("username and password required");
+    // }
 
-  // const hashedPassword = bcrypt.hashSync(password, 8);
+    // const hashedPassword = bcrypt.hashSync(password, 8);
 
-  // const newUser = {
-  //   username,
-  //   password: hashedPassword,
-  // };
+    // const newUser = {
+    //   username,
+    //   password: hashedPassword,
+    // };
 
-  // const existingUser = db.get("users").find({ username }).value();
-  // if (existingUser) {
-  //   return res.status(400).json("username taken");
-  // }
+    // const existingUser = db.get("users").find({ username }).value();
+    // if (existingUser) {
+    //   return res.status(400).json("username taken");
+    // }
 
-  // const createdUser = db.get("users").insert(newUser).write();
+    // const createdUser = db.get("users").insert(newUser).write();
 
-  // return res.status(200).json({
-  //   id: createdUser.id,
-  //   username: createdUser.username,
-  //   password: createdUser.password,
-  // });
+    // return res.status(200).json({
+    //   id: createdUser.id,
+    //   username: createdUser.username,
+    //   password: createdUser.password,
+    // });
 
-  /*
+    /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
     DO NOT EXCEED 2^8 ROUNDS OF HASHING!
@@ -87,15 +88,11 @@ router.post("/register", checkUsernameExists, async (req, res) => {
     4- On FAILED registration due to the `username` being taken,
       the response body should include a string exactly as follows: "username taken".
   */
-});
-
-router.post("/login", checkUsernameExists, async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json("username and password required");
   }
+);
 
+router.post("/login", validateBody, async (req, res) => {
+  const { username, password } = req.body;
   const newUser = await User.findBy({ username });
   const user = newUser[0];
 

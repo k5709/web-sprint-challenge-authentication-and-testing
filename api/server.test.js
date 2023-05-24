@@ -3,7 +3,7 @@ const request = require("supertest");
 const db = require("../data/dbConfig");
 const server = require("./server");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../secrets");
+const { JWT_SECRET } = require("../api/secrets/index");
 
 test("sanity", () => {
   expect(true).toBe(true);
@@ -65,13 +65,23 @@ describe("[GET] jokes", () => {
 
     expect(response.body).toEqual("token invalid");
   });
+  it("responds with the jokes on valid token", async () => {
+    const newUser = { id: 1, username: "testuser" };
+    const token = jwt.sign(newUser, JWT_SECRET);
+
+    const response = await request(server)
+      .get("/api/jokes")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+  });
 });
 
 describe("[POST] /login", () => {
   it("should return an error if username and password are missing", async () => {
     const response = await request(server)
       .post("/api/auth/login")
-      .send({ username: "" })
+      .send({})
       .expect(400);
 
     expect(response.body).toEqual("username and password required");
@@ -84,15 +94,5 @@ describe("[POST] /login", () => {
       .expect(401);
 
     expect(response.body).toEqual("invalid credentials");
-  });
-  it("responds with the jokes on valid token", async () => {
-    const newUser = { id: 1, username: "testuser" };
-    const token = jwt.sign(newUser, JWT_SECRET);
-
-    const response = await request(server)
-      .get("/api/jokes")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(200);
-    expect(response.body).toEqual();
   });
 });

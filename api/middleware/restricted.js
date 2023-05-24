@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const secretKey = require("../../secrets/index");
+const jwtSecret = require("../secrets/index");
 
 module.exports = (req, res, next) => {
   /*
@@ -19,13 +19,12 @@ module.exports = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, secretKey);
+    const decoded = jwt.verify(token, jwtSecret);
     //token is valid, gained access to decoded data if needed
 
-    req.userId = decoded.userID;
+    req.user = decoded.user;
     next();
   } catch (err) {
     return res.status(401).json("token invalid");
   }
-  next();
 };
