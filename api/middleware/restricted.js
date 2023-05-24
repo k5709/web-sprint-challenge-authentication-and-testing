@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret);
+    const decoded = jwt.verify(token, jwtSecret.JWT_SECRET);
     //token is valid, gained access to decoded data if needed
 
     req.user = decoded.user;

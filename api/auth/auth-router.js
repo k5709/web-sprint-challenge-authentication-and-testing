@@ -15,13 +15,12 @@ router.post(
   validateBody,
   async (req, res) => {
     const { username, password } = req.body;
-    console.log(username, password);
 
-    const hashedPassword = bcrypt.hashSync(password, 8);
-
-    const user = { username: username, password: hashedPassword };
     try {
+      const hashedPassword = bcrypt.hashSync(password, 8);
+      const user = { username: username, password: hashedPassword };
       const newUser = await User.add(user);
+
       res.status(201).json({
         id: newUser.id,
         username: newUser.username,
@@ -33,8 +32,9 @@ router.post(
         error.message.includes("UNIQUE")
       ) {
         return res.status(400).json("username taken");
+      } else {
+        res.status(500).json("Internal Server Error");
       }
-      res.status(500).json("Internal Server Error");
     }
 
     // const { username, password } = req.body;
@@ -98,7 +98,7 @@ router.post("/login", validateBody, async (req, res) => {
 
   if (user && bcrypt.compareSync(password, user.password)) {
     const token = buildToken(user);
-    return res.status(200).json({
+    return await res.status(200).json({
       message: `welcome back, ${user.username}`,
       token: token,
     });
