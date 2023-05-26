@@ -2,8 +2,9 @@
 const request = require("supertest");
 const db = require("../data/dbConfig");
 const server = require("./server");
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET, jwtSecret } = require("./config/secret");
+const jwt = require("jsonwebtoken")
+const secrets = require("./config/secret");
+const secret = require("./config/secret");
 
 test("sanity", () => {
   expect(true).toBe(true);
@@ -65,16 +66,14 @@ describe("[GET] jokes", () => {
 
     expect(response.body).toEqual("token invalid");
   });
-  // it("responds with the jokes on valid token", async () => {
-  //   const newUser = { id: 1, username: "testuser" };
-  //   const token = jwt.sign(newUser, jwtSecret);
+it("verifies the validity of the token", () => {
+  const newUser = { id: 1, username: "testuser" };
+  const token = jwt.sign(newUser, secret.jwtSecret);
 
-  //   const response = await request(server)
-  //     .get("/api/jokes")
-  //     .set("Authorization", `Bearer ${token}`);
+  const decodedToken = jwt.verify(token, secret.jwtSecret);
 
-  //   expect(response.statusCode).toBe(200);
-  // });
+  expect(decodedToken).toMatchObject(newUser);
+});
 });
 
 describe("[POST] /login", () => {
@@ -95,20 +94,4 @@ describe("[POST] /login", () => {
 
     expect(response.body).toEqual({message: "invalid credentials"});
   });
-//  it("should login the user successfully", async() => {
-//   const creds = { username: "kristian", password: "foobar" };
-//   const login = await request(server)
-//   .post("/api/auth/login")
-//   .send(creds)
-
-//   expect(login.text).toMatch('token')
-//  })
-//  it("should respond with successful login message", async() => {
-//   const creds = { username: "kristian", password: "foobar" };
-//   const login = await request(server)
-//   .post("/api/auth/login")
-//   .send(creds)
-
-//   expect(login.text).toMatch("welcome back, kristian")
-//  })
 });
