@@ -12,13 +12,9 @@ const server = express();
 server.use(helmet());
 server.use(cors());
 server.use(express.json());
-server.use(express.static(path.join(__dirname, "../client")));
 server.use("/api/auth", authRouter);
 server.use("/api/jokes", restrict, jokesRouter); // only logged-in users should have access!
 
-server.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client", "index.html"));
-});
 
 server.use((err, req, res, next) => {//eslint-disable-line
   res.status(err.status || 500).json({

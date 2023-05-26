@@ -22,13 +22,13 @@ router.post(
       const { username, password } = req.body;
 
       const hashedPassword = bcrypt.hashSync(password, 8);
-      const user = { username: username, password: hashedPassword };
+      const user = { 'username': username, 'password': hashedPassword };
       const newUser = await User.add(user);
 
       res.status(201).json({
-        id: newUser.id,
-        username: newUser.username,
-        password: newUser.password,
+        'id': newUser.id,
+        'username': newUser.username,
+        'password': newUser.password,
       });
     } catch (error) {
       next(error);
@@ -97,7 +97,7 @@ router.post("/login", validateBody, async (req, res) => {
     const token = buildToken(user);
     res.status(200).json({
       message: `welcome back, ${user.username}`,
-      token: token,
+      token: await token,
     });
   } else {
     return res.status(401).json("invalid credentials");
