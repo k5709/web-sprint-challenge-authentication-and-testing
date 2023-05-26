@@ -3,7 +3,7 @@ const request = require("supertest");
 const db = require("../data/dbConfig");
 const server = require("./server");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../api/secrets/index");
+const { JWT_SECRET, jwtSecret } = require("./config/secret");
 
 test("sanity", () => {
   expect(true).toBe(true);
@@ -67,7 +67,7 @@ describe("[GET] jokes", () => {
   });
   // it("responds with the jokes on valid token", async () => {
   //   const newUser = { id: 1, username: "testuser" };
-  //   const token = jwt.sign(newUser, JWT_SECRET);
+  //   const token = jwt.sign(newUser, jwtSecret);
 
   //   const response = await request(server)
   //     .get("/api/jokes")

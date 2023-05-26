@@ -1,11 +1,10 @@
 const express = require("express");
 const router = require("express").Router();
-const bcrypt = require("bcrypt");
-const restricted = require("../middleware/restricted");
-const { checkUsernameExists, validateBody } = require("./auth-middleware");
-const User = require("./auth.model");
 const jwt = require("jsonwebtoken");
-const { jwtSecret } = require("../secrets");
+const bcrypt = require("bcryptjs");
+const secrets = require("../config/secret")
+const User = require("./auth.model");
+const { checkUsernameExists, validateBody } = require("./auth-middleware");
 
 router.use(express.json());
 
@@ -14,14 +13,13 @@ router.post(
   checkUsernameExists,
   validateBody,
   async (req, res, next) => {
-    // const { username, password } = req.body;
-    // const hashedPassword = bcrypt.hashSync(password, 8);
-    // const user = { username: username, password: hashedPassword };
-
     try {
       const { username, password } = req.body;
+
       const hashedPassword = bcrypt.hashSync(password, 8);
+
       const user = { 'username': username, 'password': hashedPassword };
+      
       const newUser = await User.add(user);
 
      res.status(201).json({
@@ -93,8 +91,8 @@ router.post("/login", validateBody, async (req, res, next) => {
   const user = newUser[0];
 
   if (user && bcrypt.compareSync(password, user.password)) {
-    const token = await buildToken(user);
-    return res.status(200).json({
+    const token = buildToken(user);
+     res.status(200).json({
       message: `welcome back, ${user.username}`,
       token: token,
     });
@@ -140,7 +138,7 @@ function buildToken(user) {
     expiresIn: "1d",
   };
 
-  const secret = jwtSecret.JWT_SECRET
+  const secret = secrets.jwtSecret
   return jwt.sign(payload, secret, options);
 }
 
