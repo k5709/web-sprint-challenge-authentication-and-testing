@@ -6,7 +6,10 @@ const checkUsernameExists = async (req, res, next) => {
     const { username } = req.body;
     const newUser = await User.findBy({ username });
     if (newUser[0]) {
-      return res.status(422).json("username taken");
+      next({
+        status: 422,
+        message: "The username is already taken",
+      });
     } else {
       next();
     }
@@ -25,7 +28,10 @@ const validateBody = async (req, res, next) => {
       !password.trim() ||
       !username.trim()
     ) {
-      return res.status(400).json("username and password required");
+      next({
+        status: 400,
+        message: "username and password required",
+      });
     } else {
       next();
     }

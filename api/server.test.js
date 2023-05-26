@@ -44,7 +44,7 @@ describe("[POST] /register", () => {
       .send({ username: "", password: "testpassword" })
       .expect(400);
 
-    expect(response.body).toEqual("username and password required");
+    expect(response.body).toEqual({message: "username and password required"});
   });
 });
 
@@ -84,7 +84,7 @@ describe("[POST] /login", () => {
       .send({})
       .expect(400);
 
-    expect(response.body).toEqual("username and password required");
+    expect(response.body).toEqual({message: "username and password required"});
   });
 
   it("should return an error for invalid credentials", async () => {
