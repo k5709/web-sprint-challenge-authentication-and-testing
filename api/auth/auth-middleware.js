@@ -28,10 +28,7 @@ const validateBody = async (req, res, next) => {
       !password.trim() ||
       !username.trim()
     ) {
-      next({
-        status: 400,
-        message: "username and password required",
-      });
+      return res.status(400).json({message: "username and password required"})
     } else {
       next();
     }
