@@ -93,6 +93,22 @@ describe("[POST] /login", () => {
       .send({ username: "nonexistent", password: "wrongpassword" })
       .expect(401);
 
-    expect(response.body).toEqual("invalid credentials");
+    expect(response.body).toEqual({message: "invalid credentials"});
   });
+//  it("should login the user successfully", async() => {
+//   const creds = { username: "kristian", password: "foobar" };
+//   const login = await request(server)
+//   .post("/api/auth/login")
+//   .send(creds)
+
+//   expect(login.text).toMatch('token')
+//  })
+//  it("should respond with successful login message", async() => {
+//   const creds = { username: "kristian", password: "foobar" };
+//   const login = await request(server)
+//   .post("/api/auth/login")
+//   .send(creds)
+
+//   expect(login.text).toMatch("welcome back, kristian")
+//  })
 });

@@ -16,15 +16,15 @@ module.exports = async (req, res, next) => {
   const token = req.headers.authorization;
 
   if (token) {
-    jwt.verify(token, jwtSecret.JWT_SECRET, (err, decodedToken) => {
+    await jwt.verify(token, jwtSecret.JWT_SECRET, (err, decodedToken) => {
       if (err) {
-        return res.status(401).json("token invalid");
+         res.status(401).json("token invalid");
       } else {
-        req.decodedJwt = decodedToken;
+       req.decodedJwt =  decodedToken;
         next();
       }
     });
   } else {
-    return res.status(401).json("token required");
+   res.status(401).json("token required");
   }
 };

@@ -24,7 +24,7 @@ router.post(
       const user = { 'username': username, 'password': hashedPassword };
       const newUser = await User.add(user);
 
-     return res.status(201).json({
+     res.status(201).json({
         'id': newUser.id,
         'username': newUser.username,
         'password': newUser.password,
@@ -87,19 +87,22 @@ router.post(
   }
 );
 
-router.post("/login", validateBody, async (req, res) => {
+router.post("/login", validateBody, async (req, res, next) => {
   const { username, password } = req.body;
   const newUser = await User.findBy({ username });
   const user = newUser[0];
 
   if (user && bcrypt.compareSync(password, user.password)) {
-    const token = buildToken(user);
-    res.status(200).json({
+    const token = await buildToken(user);
+    return res.status(200).json({
       message: `welcome back, ${user.username}`,
-      token: await token,
+      token: token,
     });
   } else {
-    return res.status(401).json("invalid credentials");
+    next({
+      status: 401,
+      message: "invalid credentials"
+    })
   }
 
   /*
