@@ -74,6 +74,16 @@ it("verifies the validity of the token", () => {
 
   expect(decodedToken).toMatchObject(newUser);
 });
+// it("responds with jokes on valid token", async () => {
+//   const newUser = { id: 1, username: "testuser" };
+//   const token = jwt.sign(newUser, secret.jwtSecret);
+  
+//   const response = await request(server)
+//     .get("/api/jokes")
+//     .set("Authorization", `Bearer ${token}`)
+
+//   expect(response.body).toEqual('');
+// });
 });
 
 describe("[POST] /login", () => {
